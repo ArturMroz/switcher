@@ -1,0 +1,20 @@
+{
+  "manifest_version": "1",
+  "api_version": "1",
+  "name": "Switcher",
+  "description": "Cycles through active applications",
+  "developer_name": "Artur Mroz",
+  "icon": "images/switch.png",
+  "options": {
+    "query_debounce": 0.1
+  },
+  "preferences": [
+    {
+      "id": "switch_kw",
+      "type": "keyword",
+      "name": "Switch",
+      "description": "",
+      "default_value": "s"
+    }
+  ]
+}
