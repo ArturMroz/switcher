@@ -4,6 +4,7 @@ import logging
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Wnck
+from gi.repository.Gdk import CURRENT_TIME
 
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
@@ -29,6 +30,7 @@ class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
         items = []
+
         for window in get_active_windows():
             if window.get_class_group_name() == "Ulauncher":
                 continue
@@ -51,10 +53,12 @@ class KeywordQueryEventListener(EventListener):
         icon_name = window.get_class_group_name()
         icon_type = 'ico'
         icon_path = '/tmp/{}.{}'.format(icon_name, icon_type)
+
         if not os.path.exists(icon_path):
             save_result = icon.savev(icon_path, icon_type, [], [])
             if not save_result:
-                logger.error("Unable to write to /tmp")
+                logger.error(
+                    "Unable to write to /tmp. Using default icon as a fallback.")
                 icon_path = 'images/switch.png'
 
         return ExtensionResultItem(
@@ -68,11 +72,19 @@ class ItemEnterEventListener(EventListener):
 
     def on_event(self, event, extension):
         data = event.get_data()
+
         # have to fetch active windows again, passing window in data not supported
         windows = get_active_windows()
+
         try:
             window = next(w for w in windows if w.get_xid() == data['xid'])
+
+            # fallback in case next line doesn't work
             window.activate(time.time())
+
+            # set focus by activiating with timestamp of 0;
+            # Wnck gives a warning but otherwise seems to work
+            window.activate(CURRENT_TIME)
         except:
             logger.error("Application not accessible")
 
@@ -81,6 +93,7 @@ def get_active_windows():
     # Gtk.init([])  # necessary only if not using a Gtk.main() loop
     screen = Wnck.Screen.get_default()
     screen.force_update()  # recommended per Wnck documentation
+    logger.debug(screen.get_active_window().get_name())
 
     windows = screen.get_windows_stacked()
 
