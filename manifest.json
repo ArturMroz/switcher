@@ -1,5 +1,5 @@
 {
-  "manifest_version": "1",
+  "manifest_version": "2",
   "api_version": "1",
   "name": "Switcher",
   "description": "Cycles through active applications",
@@ -8,13 +8,27 @@
   "options": {
     "query_debounce": 0.1
   },
-  "preferences": [
-    {
+  "preferences": [{
       "id": "switch_kw",
       "type": "keyword",
-      "name": "Switch",
-      "description": "",
+      "name": "Switch keyword",
       "default_value": "s"
+    },
+    {
+      "id": "workspace_indicator",
+      "type": "select",
+      "name": "Workspace indicator",
+      "description": "Whether to display or hide the workspace indicator at the begining of the description",
+      "default_value": "true",
+      "options": [{
+          "value": "false",
+          "text": "Hide indicator"
+        },
+        {
+          "value": "true",
+          "text": "Show indicator"
+        }
+      ]
     }
   ]
 }

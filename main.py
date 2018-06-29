@@ -3,7 +3,7 @@ import time
 import logging
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Wnck
+from gi.repository import Wnck, Gtk
 from gi.repository.Gdk import CURRENT_TIME
 
 from ulauncher.api.client.Extension import Extension
@@ -29,10 +29,13 @@ class WindowsSwitcherExtension(Extension):
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
+        indicator = extension.preferences['workspace_indicator']
+        self.workspace_indicator = True if indicator == 'true' else False
+
         items = []
 
         for window in get_active_windows():
-            if window.get_class_group_name() == "Ulauncher":
+            if window.get_class_group_name() == 'Ulauncher':
                 continue
 
             query = event.get_argument()
@@ -54,17 +57,22 @@ class KeywordQueryEventListener(EventListener):
         icon_type = 'ico'
         icon_path = '/tmp/{}.{}'.format(icon_name, icon_type)
 
+        window_desc = window.get_name()
+
+        if self.workspace_indicator:
+            window_desc = '({}) {}'.format(window.workspace_id, window_desc)
+
         if not os.path.exists(icon_path):
             save_result = icon.savev(icon_path, icon_type, [], [])
             if not save_result:
                 logger.error(
-                    "Unable to write to /tmp. Using default icon as a fallback.")
+                    'Unable to write to /tmp. Using default icon as a fallback.')
                 icon_path = 'images/switch.png'
 
         return ExtensionResultItem(
             icon=icon_path,
             name=window.get_class_group_name(),
-            description=window.get_name(),
+            description=window_desc,
             on_enter=ExtensionCustomAction({'xid': window.get_xid()}))
 
 
@@ -86,16 +94,18 @@ class ItemEnterEventListener(EventListener):
             # Wnck gives a warning but otherwise seems to work
             window.activate(CURRENT_TIME)
         except:
-            logger.error("Application not accessible")
+            logger.error('Application not accessible')
 
 
 def get_active_windows():
-    # Gtk.init([])  # necessary only if not using a Gtk.main() loop
+    Gtk.init([])  # necessary only if not using a Gtk.main() loop
+
     screen = Wnck.Screen.get_default()
     screen.force_update()  # recommended per Wnck documentation
-    logger.debug(screen.get_active_window().get_name())
 
     windows = screen.get_windows_stacked()
+    for window in windows:
+        window.workspace_id = window.get_workspace().get_number() + 1
 
     # clean up Wnck (saves resources, check documentation)
     screen = None
