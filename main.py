@@ -104,8 +104,13 @@ def get_active_windows():
     screen.force_update()  # recommended per Wnck documentation
 
     windows = screen.get_windows_stacked()
-    for window in windows:
-        window.workspace_id = window.get_workspace().get_number() + 1
+    for i, window in enumerate(windows):
+        try:
+            window.workspace_id = window.get_workspace().get_number() + 1
+        except AttributeError:
+            logger.debug("A window ({}) is not attached to any workspace".format(window.get_name()))
+            # remove the window from the list to avoid NoneType on workspace_id
+            del(windows[i])
 
     # clean up Wnck (saves resources, check documentation)
     screen = None
