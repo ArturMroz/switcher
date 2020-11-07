@@ -47,8 +47,8 @@ class KeywordQueryEventListener(EventListener):
     def is_name_in_query(self, window, query):
         # TODO implement fuzzy search
         full_name = (window.get_name() + window.get_class_group_name()
-                     ).decode('utf-8').lower()
-        return query.decode('utf-8').lower() in full_name
+                     ).lower()
+        return query.lower() in full_name
 
     def create_result_item(self, window):
         # icon as Pixbuf is not supported; saving it on the disk as a workaround
